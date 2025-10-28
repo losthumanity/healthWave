@@ -3,93 +3,287 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medical Jargon Simplifier</title>
+    <title>Medical Report Simplifier - HealthWave</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body, html {
             height: 100%;
             margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
-            background: radial-gradient(circle at center, #d7ecff 0%, #ffffff 100%); /* Radial gradient from darker bluish-white to white */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
         }
+
         /* Navigation Bar Styles */
         .navbar-custom {
             padding: 0 50px;
-            background-color: #ffffff;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             height: 80px;
         }
         .navbar-custom .navbar-brand {
             font-weight: bold;
-            color: #007bff; /* Bright blue color */
-            font-size: 24px; /* Larger font size */
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* Subtle shadow for depth */
+            color: #007bff;
+            font-size: 24px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
-
         .navbar-custom .navbar-nav .nav-link {
             color: #333;
             font-size: 16px;
+            transition: color 0.3s ease;
         }
         .navbar-custom .navbar-nav .nav-link.active,
         .navbar-custom .navbar-nav .nav-item.active .nav-link {
-            color: #007bff; /* Blue for the active link */
+            color: #007bff;
+            font-weight: 600;
         }
-        .container {
+        .navbar-custom .navbar-nav .nav-link:hover {
+            color: #0056b3;
+        }
+
+        .main-container {
+            min-height: calc(100vh - 80px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .upload-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 600px;
             width: 100%;
-            max-width: 800px;
-            padding: 30px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            background-color: #ffffff;
-            border-radius: 10px;
             text-align: center;
-            margin-top: 2%;
-            overflow: hidden;
+            transition: transform 0.3s ease;
         }
+
+        .upload-section:hover {
+            transform: translateY(-5px);
+        }
+
         .header {
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
         .header h1 {
-            margin: 0;
+            margin: 0 0 10px 0;
             color: #007bff;
+            font-size: 2.5rem;
+            font-weight: 700;
         }
         .header p {
             color: #6c757d;
+            font-size: 1.1rem;
+            margin-bottom: 0;
         }
-        .btn-primary {
-            background-color: #007bff;
-            border: none;
-            border-radius: 30px;
+
+        .upload-area {
+            border: 3px dashed #007bff;
+            border-radius: 15px;
+            padding: 40px 20px;
+            margin: 30px 0;
+            background: linear-gradient(145deg, #f8f9ff, #ffffff);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area:hover {
+            border-color: #0056b3;
+            background: linear-gradient(145deg, #e7f3ff, #f8f9ff);
+            transform: scale(1.02);
+        }
+
+        .upload-area.drag-over {
+            border-color: #28a745;
+            background: linear-gradient(145deg, #e8f5e8, #f0fff0);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #007bff;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            color: #495057;
+            margin-bottom: 10px;
+        }
+
+        .upload-subtext {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .file-input {
+            position: absolute;
             width: 100%;
-            padding: 10px;
-            font-size: 16px;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
         }
-        .btn-primary:hover {
-            background-color: #0056b3;
+
+        .btn-upload {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            border: none;
+            border-radius: 25px;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
         }
-        .result-container {
-            margin-top: 30px;
-            padding: 20px;
-            background-color: #e9ebed;
+
+        .btn-upload:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4);
+        }
+
+        .btn-upload:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .selected-file {
+            background: rgba(40, 167, 69, 0.1);
+            border: 2px solid #28a745;
             border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #28a745;
+        }
+
+        .remove-file {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .result-container {
+            margin-top: 40px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
             text-align: left;
-            max-height: 650px;
+            max-height: 70vh;
             overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .result-icon {
+            font-size: 1.5rem;
+            color: #28a745;
+            margin-right: 10px;
+        }
+
+        .result-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #007bff;
+            margin: 0;
+        }
+
+        .result-content {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #333;
         }
         .loading-overlay {
             display: none;
             position: fixed;
-            z-index: 999;
+            z-index: 1000;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(255, 255, 255, 0.7);
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
         }
-        .loading-spinner {
+
+        .loading-content {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-left: 4px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        .loading-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-bar-custom {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            margin: 15px auto;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #007bff, #28a745);
+            border-radius: 2px;
+            animation: progress 3s ease-in-out infinite;
+        }
+
+        @keyframes progress {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
         }
     </style>
 </head>
@@ -122,80 +316,270 @@
         </div>
     </nav>
 
-<div class="container">
-    <div class="header">
-        <h1>Medical Report Simplifier</h1>
-        <p>Upload your medical report to get a simplified explanation</p>
-    </div>
-    <form id="upload-form" enctype="multipart/form-data">
-        <div class="form-group">
-            <input type="file" class="form-control-file" id="file-input" required>
+<div class="main-container">
+    <div class="upload-section">
+        <div class="header">
+            <h1><i class="fas fa-file-medical"></i> Medical Report Simplifier</h1>
+            <p>Transform complex medical reports into easy-to-understand explanations</p>
         </div>
-        <button type="submit" class="btn btn-primary">Upload and Simplify</button>
-    </form>
-    <div id="result-container" class="result-container" style="display: none;">
-        <h4>Simplified Explanation</h4>
-        <div id="result"></div>
-    </div>
-    <div id="loading-overlay" class="loading-overlay">
-        <div class="loading-spinner">
-            <div class="spinner-border text-primary" role="status">
-                <span class="sr-only">Loading...</span>
+
+        <form id="upload-form" enctype="multipart/form-data">
+            <div class="upload-area" id="upload-area">
+                <div class="upload-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <div class="upload-text">
+                    Drag & drop your PDF report here
+                </div>
+                <div class="upload-subtext">
+                    or click to browse files (PDF format only)
+                </div>
+                <input type="file" class="file-input" id="file-input" accept=".pdf" required>
             </div>
+
+            <div class="selected-file" id="selected-file">
+                <div class="file-info">
+                    <i class="fas fa-file-pdf" style="color: #dc3545;"></i>
+                    <span class="file-name" id="file-name"></span>
+                    <span class="file-size" id="file-size"></span>
+                    <button type="button" class="remove-file" id="remove-file">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-upload" id="upload-btn" disabled>
+                <i class="fas fa-magic"></i> Simplify Report
+            </button>
+        </form>
+
+        <div id="result-container" class="result-container">
+            <div class="result-header">
+                <div class="result-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3 class="result-title">Simplified Medical Report</h3>
+            </div>
+            <div class="result-content" id="result"></div>
         </div>
+    </div>
+</div>
+
+<div id="loading-overlay" class="loading-overlay">
+    <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Analyzing your medical report...</div>
+        <div class="progress-bar-custom">
+            <div class="progress-fill"></div>
+        </div>
+        <p style="margin-top: 15px; font-size: 0.9rem; opacity: 0.8;">
+            Our AI is breaking down complex medical terms for you
+        </p>
     </div>
 </div>
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
-    const uploadFile = async (fileInput) => {
-    const formData = new FormData();
-    formData.append('file', fileInput.files[0]);
+let selectedFile = null;
 
-    try {
-        // Show loading overlay
-        $('#loading-overlay').show();
-
-        const response = await fetch('/upload-pdf/', {
-            method: 'POST',
-            body: formData,
-        });
-
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-
-        const data = await response.json();
-
-        if (data.error) {
-            throw new Error(data.error);
-        }
-
-        const simplifiedText = data.simplified_text;
-        console.log('Simplified text:', simplifiedText);
-
-        document.getElementById('result-container').style.display = 'block';
-        document.getElementById('result').innerHTML = simplifiedText;
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Error: ' + error.message);
-    } finally {
-        // Hide loading overlay after response is received
-        $('#loading-overlay').hide();
-    }
-};
-
-// Example usage when submitting a form with file input
-document.getElementById('upload-form').addEventListener('submit', function(event) {
-    event.preventDefault();
+// Enhanced file upload with drag & drop
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('upload-area');
     const fileInput = document.getElementById('file-input');
-    if (fileInput.files.length === 0) {
-        alert("Please select a file.");
-    } else {
-        uploadFile(fileInput);
+    const selectedFileDiv = document.getElementById('selected-file');
+    const uploadBtn = document.getElementById('upload-btn');
+    const resultContainer = document.getElementById('result-container');
+
+    // Drag and drop functionality
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('drag-over');
+    });
+
+    uploadArea.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('drag-over');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('drag-over');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFileSelection(files[0]);
+        }
+    });
+
+    // Click to browse
+    uploadArea.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleFileSelection(e.target.files[0]);
+        }
+    });
+
+    // Remove file
+    document.getElementById('remove-file').addEventListener('click', () => {
+        clearFileSelection();
+    });
+
+    function handleFileSelection(file) {
+        // Validate file type
+        if (file.type !== 'application/pdf') {
+            showNotification('Please select a PDF file only.', 'error');
+            return;
+        }
+
+        // Validate file size (max 10MB)
+        if (file.size > 10 * 1024 * 1024) {
+            showNotification('File size must be less than 10MB.', 'error');
+            return;
+        }
+
+        selectedFile = file;
+
+        // Display file info
+        document.getElementById('file-name').textContent = file.name;
+        document.getElementById('file-size').textContent = formatFileSize(file.size);
+        selectedFileDiv.style.display = 'block';
+        uploadBtn.disabled = false;
+
+        // Hide upload area
+        uploadArea.style.display = 'none';
+
+        showNotification('PDF file ready to upload!', 'success');
     }
+
+    function clearFileSelection() {
+        selectedFile = null;
+        fileInput.value = '';
+        selectedFileDiv.style.display = 'none';
+        uploadArea.style.display = 'block';
+        uploadBtn.disabled = true;
+        resultContainer.style.display = 'none';
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function showNotification(message, type) {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerHTML = `
+            <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+            <span>${message}</span>
+        `;
+
+        // Add styles
+        notification.style.cssText = `
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: ${type === 'success' ? '#28a745' : '#dc3545'};
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+        `;
+
+        document.body.appendChild(notification);
+
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+
+    // Enhanced upload function
+    async function uploadFile(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            $('#loading-overlay').show();
+
+            const response = await fetch('/upload-pdf/', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
+            let simplifiedText = data.simplified_text;
+
+            // Clean up text formatting
+            simplifiedText = simplifiedText.replace(/\\n/g, '\n');
+            simplifiedText = simplifiedText.replace(/\n/g, '<br>');
+            simplifiedText = simplifiedText.trim();
+
+            // Show results with animation
+            resultContainer.style.display = 'block';
+            document.getElementById('result').innerHTML = simplifiedText;
+
+            // Smooth scroll to results
+            resultContainer.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+
+            showNotification('Report successfully simplified!', 'success');
+
+        } catch (error) {
+            console.error('Error:', error);
+            showNotification(`Error: ${error.message}`, 'error');
+        } finally {
+            $('#loading-overlay').hide();
+        }
+    }
+
+    // Form submission
+    document.getElementById('upload-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        if (selectedFile) {
+            uploadFile(selectedFile);
+        } else {
+            showNotification('Please select a PDF file first.', 'error');
+        }
+    });
 });
+
+// Add CSS animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
 </script>
 </body>
 </html>

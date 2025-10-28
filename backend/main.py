@@ -41,6 +41,9 @@ class Feedback(BaseModel):
 # Configure CORS settings
 origins = [
     "http://127.0.0.1:5173",
+    "http://127.0.0.1:5000",
+    "http://localhost:5000",
+    "http://localhost:5173",
 ]
 
 medicalsearch.add_middleware(
@@ -66,7 +69,7 @@ async def root():
 #     return {"message": "Account details updated"}
 
 
-@medicalsearch.get("/simplify_data")
+@medicalsearch.post("/simplify_data")
 def search_image(simplify: SearchPrompt):
     uuid = db.insert_input(simplify.input)
     response = model.generate_response(simplify.input)
@@ -74,7 +77,7 @@ def search_image(simplify: SearchPrompt):
     return response
 
 
-@medicalsearch.get("/simplify_text_llm")
+@medicalsearch.post("/simplify_text_llm")
 def conversation(conv: ConversationPrompt):
     uuid = db.insert_input(conv.input)
     response = chatbot.get_chatbot_answer(conv.input)
@@ -82,14 +85,14 @@ def conversation(conv: ConversationPrompt):
     return response
 
 
-@medicalsearch.get("/simplify_image_report_llm")
+@medicalsearch.post("/simplify_image_report_llm")
 def simplify_image_report(simplify: SearchPrompt ):
     # uuid = db.insert_input(simplify.input)
     response = chatbot.get_chatbot_answer(simplify.input)
     # db.insert_output(uuid, response, "ocr")
     return response
 
-@medicalsearch.get("/simplify_text_llm_context")
+@medicalsearch.post("/simplify_text_llm_context")
 def simplify_text_llm(simplify: SearchPrompt):
     uuid = db.insert_input(simplify.input)
     response = chatbot.get_chatbot_answer_with_context(simplify.input)
@@ -104,12 +107,34 @@ def reset_context():
 @medicalsearch.get("/feedback_random")
 def feedback():
     random_input = db.get_random_input()
+    if not random_input:
+        return {"error": "No input records found in database"}
+    
     output = db.get_output_from_input(random_input[0])
+    if not output:
+        return {"error": "No output found for the selected input"}
+    
     return {"input": random_input[1], "output": output[1], "uuid": output[0]}
 
-@medicalsearch.get("/get_feedback")
+@medicalsearch.post("/get_feedback")
 def get_feedback(feed: Feedback):
     db.insert_feedback(feed.uuid, feed.feedback, "doctor")
     return {"message": "Feedback received"}
+
+@medicalsearch.post("/upload-pdf/")
+async def upload_pdf(file: UploadFile = File(...)):
+    if not file.filename.lower().endswith('.pdf'):
+        return {"error": "Only PDF files are supported"}
+    
+    try:
+        # Read the PDF content
+        content = await file.read()
+        
+        # For now, return a simple response since we don't have PDF processing in backend
+        # The frontend will handle PDF extraction
+        return {"message": "PDF received", "filename": file.filename}
+        
+    except Exception as e:
+        return {"error": f"Error processing PDF: {str(e)}"}
     
     

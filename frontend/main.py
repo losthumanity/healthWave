@@ -10,6 +10,7 @@ from time import sleep
 import markdown2 as md
 import csv
 from flask_cors import CORS
+import PyPDF2
 
 app = Flask(__name__)
 CORS(app)
@@ -18,6 +19,17 @@ def extract_text_from_image(image_file):
     img = Image.open(image_file)
     text = pytesseract.image_to_string(img)
     return text
+
+def extract_text_from_pdf(pdf_file):
+    """Extract text from PDF file"""
+    try:
+        pdf_reader = PyPDF2.PdfReader(pdf_file)
+        text = ""
+        for page in pdf_reader.pages:
+            text += page.extract_text()
+        return text
+    except Exception as e:
+        raise Exception(f"Error extracting text from PDF: {str(e)}")
 
 @app.route('/reports', methods=['GET'])
 def reports():
@@ -47,7 +59,7 @@ def chat_interaction():
 
     try:
         rest_api_url = 'http://127.0.0.1:8000/simplify_text_llm_context/'
-        response = requests.get(rest_api_url, json={'input': user_message})
+        response = requests.post(rest_api_url, json={'input': user_message})
 
         if response.status_code == 200:
             return jsonify({'response': md.markdown(response.content.decode())})
@@ -66,14 +78,27 @@ def upload_pdf():
     if file.filename == '':
         return jsonify({'error': 'No file selected for uploading'}), 400
 
-    try:
-        extracted_text = extract_text_from_image(file)
+    # Check file extension
+    if not file.filename.lower().endswith('.pdf'):
+        return jsonify({'error': 'Only PDF files are supported'}), 400
 
+    try:
+        # Extract text from PDF
+        extracted_text = extract_text_from_pdf(file)
+
+        if not extracted_text.strip():
+            return jsonify({'error': 'No text could be extracted from the PDF'}), 400
+
+        # Send to backend for simplification
         rest_api_url = 'http://127.0.0.1:8000/simplify_text_llm/'
-        response = requests.get(rest_api_url, json={'input': extracted_text})
+        response = requests.post(rest_api_url, json={'input': extracted_text})
 
         if response.status_code == 200:
-            return jsonify({'simplified_text': md.markdown(response.content.decode())})
+            # Get the raw response and clean it up
+            raw_text = response.content.decode()
+            # Convert to markdown for better formatting
+            formatted_text = md.markdown(raw_text)
+            return jsonify({'simplified_text': formatted_text})
         else:
             return jsonify({'error': 'Failed to get simplified text'}), response.status_code
     except Exception as e:
@@ -89,7 +114,7 @@ def upload_text():
 
     try:
         rest_api_url = 'http://127.0.0.1:8000/simplify_data/'
-        response = requests.get(rest_api_url, json={'input': medical_text})
+        response = requests.post(rest_api_url, json={'input': medical_text})
 
         if response.status_code == 200:
             return jsonify({'simplified_text': md.markdown(response.content.decode())})
@@ -118,7 +143,7 @@ def feedback():
         return jsonify({'error': 'Feedback or UUID not provided'}), 400
     try:
         rest_api_url = 'http://127.0.0.1:8000/get_feedback/'
-        response = requests.get(rest_api_url, json={'feedback': feedback, 'uuid': uuid})
+        response = requests.post(rest_api_url, json={'feedback': feedback, 'uuid': uuid})
         if response.status_code == 200:
             return jsonify({'message': 'Feedback submitted successfully'})
         else:

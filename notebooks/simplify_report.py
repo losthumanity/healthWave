@@ -3,7 +3,7 @@ from PIL import Image
 from langchain_community.llms import Ollama
 from deep_translator import GoogleTranslator
 
-llm=Ollama(model="llama3")
+llm=Ollama(model="llama3.2:1b")
 
 def extract_text_from_image(image_path):
     image_path = 'report.png'
@@ -15,7 +15,7 @@ def extract_text_from_image(image_path):
 def simplify_medical_report(image_path):
     ocr_data=extract_text_from_image(image_path)
     summarization_prompt=[f"""You are an intelligent clinical languge model.
-                        Below is a snippet of patient's discharge summary. Extract the  hospital course and laboratory tests from this OCR data. Return result in 
+                        Below is a snippet of patient's discharge summary. Extract the  hospital course and laboratory tests from this OCR data. Return result in
                         json format with keys hospital course and laboratory tests.
                         [OCR Data Begin]
                         {ocr_data}

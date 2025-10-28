@@ -7,6 +7,7 @@ class DatabaseService:
         self.db_path = db_path
         self.conn = mysql.connect(
             host=variables["database_host"],
+            port=variables["database_port"],
             user=variables["database_user"],
             password=variables["database_password"],
             database=variables["database_name"]

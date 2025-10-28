@@ -1,4 +1,6 @@
+# virtual environments
 .venv
+chatbot
 .idea
 .ipynb_checkpoints
 .mypy_cache
