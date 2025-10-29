@@ -123,33 +123,33 @@ def upload_text():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/jargon', methods=['GET'])
-def jargon():
-    try:
-        rest_api_url = 'http://127.0.0.1:8000/feedback_random/'
-        response = requests.get(rest_api_url)
-        data = response.json()
-        return render_template('jargon.html', data=data)
-    except Exception as e:
-        return render_template('jargon.html')
+# @app.route('/jargon', methods=['GET'])
+# def jargon():
+#     try:
+#         rest_api_url = 'http://127.0.0.1:8000/feedback_random/'
+#         response = requests.get(rest_api_url)
+#         data = response.json()
+#         return render_template('jargon.html', data=data)
+#     except Exception as e:
+#         return render_template('jargon.html')
 
-@app.route('/feedback', methods=['POST'])
-def feedback():
-    data = request.json
-    feedback = data.get('feedback')
-    uuid = data.get('uuid')
+# @app.route('/feedback', methods=['POST'])
+# def feedback():
+#     data = request.json
+#     feedback = data.get('feedback')
+#     uuid = data.get('uuid')
 
-    if not feedback or not uuid:
-        return jsonify({'error': 'Feedback or UUID not provided'}), 400
-    try:
-        rest_api_url = 'http://127.0.0.1:8000/get_feedback/'
-        response = requests.post(rest_api_url, json={'feedback': feedback, 'uuid': uuid})
-        if response.status_code == 200:
-            return jsonify({'message': 'Feedback submitted successfully'})
-        else:
-            return jsonify({'error': 'Failed to submit feedback'}), response.status_code
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+#     if not feedback or not uuid:
+#         return jsonify({'error': 'Feedback or UUID not provided'}), 400
+#     try:
+#         rest_api_url = 'http://127.0.0.1:8000/get_feedback/'
+#         response = requests.post(rest_api_url, json={'feedback': feedback, 'uuid': uuid})
+#         if response.status_code == 200:
+#             return jsonify({'message': 'Feedback submitted successfully'})
+#         else:
+#             return jsonify({'error': 'Failed to submit feedback'}), response.status_code
+#     except Exception as e:
+#         return jsonify({'error': str(e)}), 500
 
 @app.route('/translate-and-speak/', methods=['POST'])
 def translate_and_speak():
