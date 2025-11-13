@@ -235,15 +235,25 @@ Response:"""
 
 Please analyze and simplify this medical content: {user_input}
 
-Please format your response clearly with:
-- Key findings in bullet points
-- Simple explanations of medical terms
-- Clear sections for different topics
-- Easy-to-read structure
+Guidelines:
+- Start with a clear introduction
+- Break down complex information into clear sections
+- Use proper paragraphs (double line breaks between sections)
+- Format lists with bullet points when appropriate
+- Use simple, easy-to-understand language
+- Highlight key terms in bold using **term**
 
 Provide a well-formatted, helpful explanation:"""
 
                 result = self.llm.invoke(medical_prompt)
+
+                # Clean up the response
+                result = result.strip()
+                # Replace multiple newlines with double newlines for paragraph breaks
+                result = re.sub(r'\n{3,}', '\n\n', result)
+                # Ensure consistent spacing around bullet points
+                result = re.sub(r'\n\s*([*•-])', r'\n\n\1', result)
+
                 logger.info(f"Medical report analysis completed for input length: {len(user_input)}")
                 return result
             except Exception as e:
@@ -273,14 +283,24 @@ Provide a well-formatted, helpful explanation:"""
 Please answer this medical question: {question}
 
 Guidelines:
-- Provide clear, simple explanations
-- Avoid complex medical jargon
-- Be helpful and informative
-- If it's a medical term, explain what it is, what it does, and any important information people should know
+- Start with a brief introduction of what the term/condition is
+- Break down the explanation into clear paragraphs
+- Use simple language and avoid complex jargon
+- Include practical information when relevant
+- Structure your response with proper paragraphs (use double line breaks between sections)
+- Be concise but thorough
 
 Answer:"""
 
             response = self.llm.invoke(medical_prompt)
+
+            # Clean up the response - remove excessive newlines and format properly
+            response = response.strip()
+            # Replace multiple newlines with double newlines for paragraph breaks
+            response = re.sub(r'\n{3,}', '\n\n', response)
+            # Ensure consistent spacing around bullet points
+            response = re.sub(r'\n\s*([*•-])', r'\n\n\1', response)
+
             logger.info(f"Direct LLM response for '{question}': {response[:100]}...")
 
             # Add to chat history

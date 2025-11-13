@@ -197,7 +197,27 @@
 
         .message-text {
             margin: 0;
-            line-height: 1.5;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .message-text p {
+            margin: 0.8rem 0;
+        }
+
+        .message-text ul, .message-text ol {
+            margin: 0.8rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .message-text li {
+            margin: 0.4rem 0;
+        }
+
+        .message-text strong {
+            font-weight: 600;
+            color: inherit;
         }
 
         .message-time {
@@ -462,9 +482,9 @@
         <!-- Chat Input -->
         <div class="chat-input-container">
             <form class="chat-input-form" id="chatForm">
-                <textarea 
-                    id="chatInput" 
-                    class="chat-input" 
+                <textarea
+                    id="chatInput"
+                    class="chat-input"
                     placeholder="Type your medical question here..."
                     rows="1"
                 ></textarea>
@@ -515,33 +535,68 @@
         function addMessage(content, isUser = false) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
-            
+
             const avatar = document.createElement('div');
             avatar.className = 'message-avatar';
             avatar.innerHTML = isUser ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
-            
+
             const messageContent = document.createElement('div');
             messageContent.className = 'message-content';
-            
+
             const messageText = document.createElement('div');
             messageText.className = 'message-text';
-            messageText.innerHTML = content;
-            
+
+            // Format the message content properly
+            if (!isUser) {
+                // For bot messages, format with proper HTML
+                let formattedContent = content
+                    // Convert \n\n to paragraph breaks
+                    .replace(/\\n\\n/g, '\n\n')
+                    .replace(/\n\n/g, '</p><p>')
+                    // Convert single \n to <br>
+                    .replace(/\\n/g, '\n')
+                    .replace(/\n/g, '<br>')
+                    // Format bold text
+                    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                    // Format bullet points
+                    .replace(/^[•\-\*]\s+(.+)$/gm, '<li>$1</li>')
+                    // Wrap in paragraph tags
+                    .trim();
+
+                // Wrap list items in ul tags
+                if (formattedContent.includes('<li>')) {
+                    formattedContent = formattedContent.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+                }
+
+                // Wrap in paragraph if not already formatted
+                if (!formattedContent.startsWith('<p>') && !formattedContent.startsWith('<ul>')) {
+                    formattedContent = '<p>' + formattedContent + '</p>';
+                } else if (formattedContent.startsWith('</p>')) {
+                    formattedContent = '<p>' + formattedContent;
+                } else {
+                    formattedContent = '<p>' + formattedContent + '</p>';
+                }
+
+                messageText.innerHTML = formattedContent;
+            } else {
+                messageText.textContent = content;
+            }
+
             const messageTime = document.createElement('div');
             messageTime.className = 'message-time';
             messageTime.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
+
             messageContent.appendChild(messageText);
             messageContent.appendChild(messageTime);
             messageDiv.appendChild(avatar);
             messageDiv.appendChild(messageContent);
-            
+
             // Remove welcome message if it exists
             const welcomeMsg = chatMessages.querySelector('.welcome-message');
             if (welcomeMsg) {
                 welcomeMsg.remove();
             }
-            
+
             chatMessages.appendChild(messageDiv);
             scrollToBottom();
         }
@@ -562,11 +617,11 @@
         async function sendMessage(message) {
             // Add user message
             addMessage(message, true);
-            
+
             // Disable input
             sendButton.disabled = true;
             chatInput.disabled = true;
-            
+
             // Show typing indicator
             showTyping();
 
