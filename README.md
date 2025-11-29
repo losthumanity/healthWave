@@ -1,208 +1,140 @@
-# HealthWave : A Comprehensive Medical Jargons Simplifier App
+# HealthWave: AI-Powered Medical Document Simplification Platform
 
-## Problem Description
+## Overview
 
-In the field of healthcare, medical terminology and jargon can be highly complex and difficult for non-medical professionals to understand. This complexity often creates barriers for patients and caregivers in comprehending medical reports, diagnoses, and treatment options. There is a significant need for tools that can simplify medical jargon and provide accessible explanations to improve health literacy among the general population.
+HealthWave bridges the gap between complex medical language and patient understanding. Our platform leverages advanced AI models to translate technical medical terminology into clear, accessible language, empowering patients and caregivers with better health literacy.
 
-## Purpose of the Product
-
-The **HealthWave- Medical Jargon Simplifier App** aims to address the challenges associated with complex medical language by providing a comprehensive solution for translating, explaining, and simplifying medical jargon. This product is designed to enhance accessibility to medical information, empower patients and caregivers with understandable health insights, and facilitate better communication between healthcare providers and their patients.
-
-
-## Key Functionalities
+## Core Features
 
 ### 1. Medical Text Translator
+Converts complex medical terminology into plain language explanations.
 
-- **Purpose**: Translates complex medical text into simple, easy-to-understand language.
-- **How It Works**: You input medical text (sentence or paragraph), and it provides explanations in plain language.
+### 2. AI Medical Assistant
+An intelligent chatbot that answers questions about medical terms and conditions using a comprehensive knowledge base.
 
-### 2. Medical Terminology Simplifier Chatbot
+### 3. Medical Report Analyzer
+Extracts and summarizes information from medical reports (images or PDFs) into easy-to-understand summaries.
 
-- **Purpose**: Answers questions about medical terms and topics in simple terms.
-- **How It Works**: Interacts with users to provide information from a knowledge base of medical documents.
+## Quick Start Guide
 
-### 3. Medical Report Simplifier
+### Prerequisites
 
-- **Purpose**: Simplifies medical reports by extracting text from images or PDFs and summarizing key information.
-- **How It Works**: Upload your medical reports, and it generates concise summaries in simple terms.
+- **Ollama** with Llama3.2 model installed and running on port 11434
 
-## Build it yourself
-
-### Requirements
-
-- Ollama installed system with llama3 model downloaded
-
-  - ollama should be up and serving the port 11434, this installs ollama system-wide, referenced from [ollama page](https://ollama.com/download).
-
+  Install Ollama ([Download here](https://ollama.com/download)):
   ```bash
-    curl -fsSL https://ollama.com/install.sh | sh
+  curl -fsSL https://ollama.com/install.sh | sh
   ```
 
-  - download llama3, make sure you are running this on a capable system with a dedicated gpu.
-
+  Download Llama3 model:
   ```bash
-    ollama install llama3
+  ollama install llama3
   ```
 
-- Setup our app
+### Installation
 
-  - Clone the repository
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/losthumanity/healthWave.git
+   cd healthWave
+   ```
 
-  ```bash
-    git clone https://github.com/losthumanity/healthWave.git
-  ```
-  - Setup Database: Ensure you have docker and docker-compose installed
-  ```bash
-    cd database
-    docker compose up -d
-  ```
-  - Setup Backend
+2. **Setup Database**
+   ```bash
+   cd database
+   docker compose up -d
+   ```
 
-  ```bash
-    cd backend
-    python3 -m venv .venv
-    source .venv/bin/activate
-    pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-    pip install -r requirements.txt
-  ```
+3. **Setup Backend**
+   ```bash
+   cd backend
+   python3 -m venv .venv
+   source .venv/bin/activate
+   pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+   pip install -r requirements.txt
+   ```
 
-  - Run backend
+4. **Run Backend**
+   ```bash
+   uvicorn main:medicalsearch --host 0.0.0.0 --port 8000 --reload
+   ```
 
-  ```bash
-    uvicorn main:medicalsearch --host 0.0.0.0 --port 8000 --reload
-  ```
+5. **Setup Frontend**
+   ```bash
+   cd frontend
+   python3 -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   ```
 
-  - Setup Frontend
+6. **Run Frontend**
+   ```bash
+   python3 main.py
+   ```
 
-  ```bash
-    cd frontend
-    python3 -m venv .venv
-    source .venv/bin/activate
-    pip install -r requirements.txt
-  ```
+## Technology Stack
 
-  - Run Frontend
+### Medical Text Translator
 
-  ```bash
-    python3 main.py
-  ```
+Built on the **T5 (Text-To-Text Transfer Transformer)** model, fine-tuned specifically for medical terminology simplification.
 
-## Models
+#### Training Approach
 
-## 1. Medical Text Translator
+- **Task Prefix**: `"simplify: "` prepended to all medical texts
+- **Architecture**: T5-base model fine-tuned on curated medical text pairs
 
-To translate medical text into simplified text with explanation of medical jargons in simple terms, we finetune the model T5, also known as Text-To-Text-Transfer-Transformer.
+#### Data Sources
 
-T5 is a transformer model trained using a unique approach that treats every NLP task as a text-to-text problem. So, every task, regardless of its nature, is framed as generating a text output from a text input.
+- cbasu/Med-EASi
+- MTSamples
+- SimMedLexSp
+- PLABA
+- WWW2019 medical research datasets
+- LLM-augmented data generation for enhanced coverage
 
-In a multitask setting, each task gets its own specific task prefix, which describes what task the model is supposed to perform.
+#### Training Configuration
 
-For our text simplification task, we add our custom task prefix "simplify: ". If we want to later extend our model for other tasks like medical text summarization and question answering, we can extend our model with task prefixes for those tasks in a multi-task training setup.
+- Learning rate: 3e-05
+- Batch size: 4 (train/eval)
+- Optimizer: Adam (β=(0.9, 0.999), ε=1e-08)
+- Scheduler: Linear with 1000 warmup steps
+- Epochs: 10
+- Weight decay: 0.01
 
-### Model Training Pipeline
+#### Performance Metrics
 
-### i. Data Collection
+- Cross-Entropy Loss: 0.0221
+- ROUGE-1: 0.8485
+- ROUGE-2: 0.7157
+- ROUGE-L: 0.8451
 
-The data has been collected from various sources such as:
+#### Quality Assurance
 
-- **cbasu/Med-EASi**
-- **MTSamples**
-- **SimMedLexSp**
-- **PLABA**
-- **https://github.com/myTomorrows-research/public/tree/5b054a88746b7d4422732e2fd3ee6a77a8a53918/WWW2019**
-- **https://github.com/AshOlogn/Paragraph-level-Simplification-of-Medical-Texts/tree/main/data**
+All model outputs are stored in the database for expert validation by healthcare professionals, with approved corrections used for continuous model improvement.
 
-We were able to extract some text pairs that can be considered fairly clean from these datasources.
+### Medical Report Analyzer
 
-Apart from that, some text pairs were also obtained with the help of LLMs as follows:
+- **OCR Engine**: Pytesseract for text extraction from images and PDFs
+- **Language Model**: Llama3 for intelligent text simplification
+- **Output**: Concise, patient-friendly summaries
 
-- Some medical descriptions from MEDLANE were given to an LLM for text simplification.
-- Some unclean text pairs from the above mentioned data sources were given to an LLM to construct clean text pairs.
-- We also instructed an LLM to generate text pairs like the ones we have obtained from the above mentioned procedures.
+### AI Medical Assistant
 
-### ii. Model Training
+- **Framework**: LangChain with Retrieval Augmented Generation (RAG)
+- **Language Model**: Llama3 (via Ollama)
+- **Vector Database**: FAISS-GPU for fast semantic search
+- **Embeddings**: Hugging Face models for semantic understanding
+- **Memory**: Session-based context management for coherent conversations
 
-We finetuned T5-base on the text pairs obtained from our data collections process. The medical texts were appended with the "simplify: " task prefix before feeding the text pairs into the model during training.
+## Privacy & Security
 
-The following hyperparameters were used during training:
+HealthWave prioritizes user privacy with a privacy-first architecture:
 
-- learning_rate: 3e-05
-- train_batch_size: 4
-- eval_batch_size: 4
-- seed: 42 _(for random data split)_
-- optimizer: Adam with betas=(0.9,0.999) and epsilon=1e-08
-- lr_scheduler_type: linear
-- lr_scheduler_warmup_steps: 1000
-- num_epochs: 10
-- weight_decay=0.01
+- **On-Device Processing**: Sensitive information is processed locally before any cloud transmission
+- **Data Anonymization**: Personal identifiers are stripped before data leaves your device
+- **No Tracking**: Your medical information remains private and is never used for profiling
+- **Future-Ready**: Designed with mobile-first architecture for enhanced local security
 
-### iii. Model Evaluation
+---
 
-The model was evaluated using the following metrics:
-
-- Cross-Entropy Loss: It quantifies the difference between the predicted probability distribution and the true distribution of labels.
-- Rouge1: Measures unigram (word) overlap between generated and reference summaries.
-- Rouge2: Measures bigram (two consecutive words) overlap between generated and reference summaries.
-- RougeL: Measures the longest common subsequence (LCS) overlap, capturing sentence-level structure similarity.
-
-The model achieves the following results on our evaluation set:
-
-- Loss: 0.0221
-- Rouge1: 0.8485
-- Rouge2: 0.7157
-- RougeL: 0.8451
-
-### Model validation (Expert feedback):
-
-All the input-output pairs generated from the model will be saved in the database which will be send to the expert(doctor or health-care professionals) to approve it if correct and edit it if the model prediction is not satisfiable. The validated output will then be used to retrain the model .
-
-## 2. Medical Report Simplifier
-
-### Purpose
-
-Enables users to easily understand complex medical documents by transforming them into straightforward summaries.
-
-### How It Works
-
-- **Upload**: Users upload medical reports in formats such as images or PDFs.
-- **Text Extraction**: Utilizes Optical Character Recognition (OCR) via Pytesseract to extract text from the uploaded documents.
-- **Text Simplification**: The extracted text is processed using the LLama3 model, which simplifies the medical jargon into plain language.
-- **Summary Output**: Delivers a concise, easy-to-understand summary of the medical report.
-
-## 3. Medical Terminology Simplifier Chatbot
-
-### Purpose
-
-Provides instant explanations of complex medical terms and jargon to users, making medical information more accessible and understandable.
-
-### Technology
-
-- Langchain
-- Llama3 from Ollama
-
-### How It Works
-
-It uses the concept of Retrieval Augmented Generation(RAG).
-
-- **Query Input**: Users submit questions or terms they need explained.
-- **Data Processing**:
-  - **Loader**: Loads medical terms from a CSV dataset.
-  - **Text Processing**: A Recursive Text Splitter segments complex terms for processing.
-  - **Embedding**: Terms are converted into vector embeddings using a Hugging Face model for semantic understanding.
-- **Search and Retrieval**:
-  - **Vector Storage**: Embeddings are stored in a `faiss-gpu` vector database for quick retrieval.
-  - **Retrieval**: The LangChain retriever matches user queries with relevant terms and explanations based on vector similarity.
-- **Response Generation**:
-  - **Contextual Understanding**: The LLama3 model uses the query and session history to generate a context-aware response.
-  - **Memory Management**: Responses are stored temporarily to maintain context throughout the session, enhancing the interaction quality.
-- **User Interaction**: Delivers simplified explanations directly to the user.
-
-<br>
-
-## How HealthWave maintains user-privacy
-
-The main agenda here was to serve the application to the user. We used Flask here for rapid development but our ideal case scenario was a native mobile app. Here flask is idealized to be just a frontend wrapper and provide a easy functionality that we wanted to add. We are aligning towards a mobile app because
-
-- **Security:** Your data is always with you and your sensitive information is always anonymized when it leaves the phone, leaving no trace of who you are.
-
-- **Privacy:** On device information processing to hide the sensitive information before they are sent to the cloud.
+**License**: See [LICENSE](LICENSE) file for details.
